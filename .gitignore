@@ -1,0 +1,29 @@
+# env
+.env
+.env.*
+!.env.example
+
+# node
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+next-env.d.ts
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# media / outputs
+media/
+outputs/
+*.mp4
+*.mov
+*.ass
+
+# misc
+.DS_Store
+.vercel
+supabase/.temp/
+supabase/.branches/
