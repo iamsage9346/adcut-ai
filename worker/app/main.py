@@ -28,4 +28,8 @@ def create_job(req: JobRequest) -> dict:
 @app.get("/jobs/{job_id}")
 def job_status(job_id: str) -> dict:
     res = AsyncResult(job_id, app=celery_app)
-    return {"job_id": job_id, "state": res.state, "info": res.info if res.info else None}
+    if res.failed():
+        # 예외 객체는 JSON 직렬화가 안 되므로 문자열로
+        return {"job_id": job_id, "state": res.state, "error": f"{type(res.result).__name__}: {res.result}"}
+    info = res.info if isinstance(res.info, (dict, list, str, int, float)) else None
+    return {"job_id": job_id, "state": res.state, "info": info}
