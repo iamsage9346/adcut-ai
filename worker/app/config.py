@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     worker_port: int = 8000
 
     supabase_url: str = ""
-    supabase_service_role_key: str = ""
+    supabase_secret_key: str = ""
 
     r2_account_id: str = ""
     r2_access_key_id: str = ""
