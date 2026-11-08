@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Header } from "@/components/header";
 import { ensureClinic } from "@/lib/clinic";
+import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 const STATUS: Record<string, string> = {
@@ -9,11 +9,12 @@ const STATUS: Record<string, string> = {
 };
 
 export default async function Dashboard() {
+  await connection(); // 요청마다 렌더 (세션 쿠키 의존)
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) redirect("/login?mode=signin");
+  if (!auth.user) throw new Error("세션을 만들지 못했습니다. 새로고침해 주세요.");
 
-  const clinic = await ensureClinic(supabase, auth.user.id, auth.user.email ?? "");
+  const clinic = await ensureClinic(supabase, auth.user.id);
   const { data: projects } = await supabase
     .from("projects")
     .select("id,title,status,created_at")
@@ -22,7 +23,7 @@ export default async function Dashboard() {
 
   return (
     <>
-      <Header email={auth.user.email ?? ""} />
+      <Header />
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
         <div className="flex items-center justify-between">
           <div>

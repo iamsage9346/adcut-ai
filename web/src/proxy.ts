@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-/** 요청마다 Supabase 세션 쿠키를 갱신한다. */
+/** 요청마다 Supabase 세션을 갱신하고, 세션이 없으면 익명 세션을 만든다 (로그인 화면 없음). */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
   const supabase = createServerClient(
@@ -18,7 +18,8 @@ export async function proxy(request: NextRequest) {
       },
     },
   );
-  await supabase.auth.getUser();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) await supabase.auth.signInAnonymously();
   return response;
 }
 
