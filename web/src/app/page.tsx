@@ -1,69 +1,50 @@
-import Image from "next/image";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
+import { createClient } from "@/lib/supabase/server";
+
+/** 로그인돼 있으면 대시보드로. 쿠키를 읽으므로 Suspense 안에서만 렌더된다. */
+async function AuthRedirect() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+  if (data.user) redirect("/dashboard");
+  return null;
+}
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
+      <Suspense fallback={null}>
+        <AuthRedirect />
+      </Suspense>
+      <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">병원 전용</span>
+      <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-5xl">
+        원장님이 찍기만 하면,<br />숏폼은 자동으로 완성됩니다
+      </h1>
+      <p className="mt-6 max-w-xl text-lg text-zinc-600">
+        대본과 영상을 올리면 NG·침묵 구간을 잘라내고 병원 브랜드 자막을 입힙니다.
+        의료광고법 위반 표현은 자동으로 잡아냅니다.
+      </p>
+      <div className="mt-10 flex gap-3">
+        <Link href="/login" className="rounded-lg bg-zinc-900 px-5 py-3 text-sm font-semibold text-white hover:bg-zinc-700">
+          시작하기
+        </Link>
+        <Link href="/login?mode=signin" className="rounded-lg border border-zinc-300 px-5 py-3 text-sm font-semibold hover:bg-white">
+          로그인
+        </Link>
+      </div>
+      <ul className="mt-16 grid max-w-3xl gap-6 text-left sm:grid-cols-3">
+        {[
+          ["대본 기준 자동 컷", "말 더듬은 곳, 재촬영, 긴 침묵을 대본과 대조해 잘라냅니다."],
+          ["브랜드 자막", "병원별 폰트·색상 템플릿으로 자막을 입힙니다."],
+          ["의료광고법 검수", "'100%', '효과 보장' 같은 표현을 발행 전에 경고합니다."],
+        ].map(([t, d]) => (
+          <li key={t} className="rounded-xl border border-zinc-200 bg-white p-5">
+            <p className="font-semibold">{t}</p>
+            <p className="mt-2 text-sm text-zinc-600">{d}</p>
+          </li>
+        ))}
+      </ul>
+    </main>
   );
 }
